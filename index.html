@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Bangtao Tennis Club</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-color: #121824;
+      --card-bg: #1c2433;
+      --accent-color: #2ea5ff;
+      --text-color: #ffffff;
+      --text-muted: #8e9bb0;
+      --danger-color: #ff4d4d;
+      --success-color: #2ed573;
+      --border-color: #2c384e;
+    }
+
+    body {
+      margin: 0;
+      padding: 12px 12px 80px 12px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Навигация внизу */
+    .tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background-color: #161d2b;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      border-top: 1px solid var(--border-color);
+      z-index: 100;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 11px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      width: 33%;
+    }
+
+    .tab-btn.active {
+      color: var(--accent-color);
+      font-weight: bold;
+    }
+
+    .tab-btn span {
+      font-size: 18px;
+    }
+
+    /* Секции страниц */
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    /* Заголовки */
+    h2 {
+      margin: 8px 0 16px 0;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Карточка матча */
+    .match-card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border-color);
+    }
+
+    .match-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .match-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-color);
+    }
+
+    .match-location {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .match-badge {
+      background: #253347;
+      color: var(--accent-color);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    /* Список игроков */
+    .players-list {
+      margin: 12px 0;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border-color);
+    }
+
+    .players-title {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .player-tag {
+      display: inline-block;
+      background-color: #253347;
+      padding: 4px 10px;
+      border-radius: 16px;
+      font-size: 13px;
+      margin: 3px 4px 3px 0;
+    }
+
+    /* Кнопки */
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .btn-primary { background-color: var(--accent-color); color: #fff; }
+    .btn-danger { background-color: var(--danger-color); color: #fff; }
+    .btn-secondary { background-color: #2a374e; color: #fff; }
+
+    /* Формы */
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background-color: #121824;
+      color: #fff;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    /* Переключатель в турнирной таблице */
+    .toggle-group {
+      display: flex;
+      background-color: #161d2b;
+      border-radius: 8px;
+      padding: 4px;
+      margin-bottom: 16px;
+    }
+
+    .toggle-btn {
+      flex: 1;
+      padding: 8px;
+      text-align: center;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .toggle-btn.active {
+      background-color: var(--accent-color);
+      color: #fff;
+      font-weight: bold;
+    }
+
+    /* Таблица результатов */
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .leaderboard-table th, .leaderboard-table td {
+      padding: 12px;
+      text-align: left;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .leaderboard-table th {
+      background-color: #161d2b;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Вкладка 1: Список матчей -->
+  <div id="matches-page" class="page active">
+    <h2>🎾 Расписание матчей</h2>
+    <div id="matches-container">
+      <!-- Пример карточки матча 1 -->
+      <div class="match-card">
+        <div class="match-header">
+          <div>
+            <div class="match-title">📅 25 августа, 19:00</div>
+            <div class="match-location">📍 Bangtao Tennis Club</div>
+          </div>
+          <span class="match-badge">2/4</span>
+        </div>
+        <div class="players-list">
+          <div class="players-title">Записались:</div>
+          <span class="player-tag">👤 Vlad</span>
+          <span class="player-tag">👤 Alex</span>
+        </div>
+        <button class="btn btn-primary" onclick="sendData({action: 'join', match_id: 1})">Записаться</button>
+      </div>
+
+      <!-- Ввод счета для сыгранного матча -->
+      <div class="match-card">
+        <div class="match-header">
+          <div>
+            <div class="match-title">📅 22 августа (Сыгран)</div>
+            <div class="match-location">📍 Bangtao Tennis Club</div>
+          </div>
+          <span class="match-badge" style="background: #1d3829; color: var(--success-color);">Завершен</span>
+        </div>
+        <div class="form-group" style="margin-top: 10px;">
+          <label>Внести счет матча:</label>
+          <input type="text" id="score-input-1" placeholder="Например: 6:4, 3:6, 7:6">
+        </div>
+        <button class="btn btn-secondary" onclick="saveScore(1)">Сохранить счет</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Вкладка 2: Создание матча (для Админа) -->
+  <div id="create-page" class="page">
+    <h2>➕ Создать матч</h2>
+    <div class="match-card">
+      <div class="form-group">
+        <label>Дата и Время:</label>
+        <input type="datetime-local" id="match-datetime">
+      </div>
+      <div class="form-group">
+        <label>Корт / Локация:</label>
+        <input type="text" id="match-location" placeholder="Bangtao Tennis Club">
+      </div>
+      <div class="form-group">
+        <label>Макс. игроков:</label>
+        <input type="number" id="match-max" value="4" min="2" max="10">
+      </div>
+      <button class="btn btn-primary" onclick="createMatch()">Опубликовать матч</button>
+    </div>
+  </div>
+
+  <!-- Вкладка 3: Турнирная таблица -->
+  <div id="leaderboard-page" class="page">
+    <h2>🏆 Турнирная таблица</h2>
+    
+    <div class="toggle-group">
+      <button class="toggle-btn active" id="btn-wins" onclick="switchLeaderboard('wins')">По победам</button>
+      <button class="toggle-btn" id="btn-games" onclick="switchLeaderboard('games')">По геймам</button>
+    </div>
+
+    <table class="leaderboard-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Игрок</th>
+          <th id="stat-header">Победы</th>
+        </tr>
+      </thead>
+      <tbody id="leaderboard-body">
+        <tr>
+          <td>1</td>
+          <td>👤 Vlad</td>
+          <td><b>5</b> (71%)</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>👤 Alex</td>
+          <td><b>3</b> (50%)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Навигационное меню -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showPage('matches-page', this)">
+      <span>🎾</span> Матчи
+    </button>
+    <button class="tab-btn" onclick="showPage('create-page', this)">
+      <span>➕</span> Создать
+    </button>
+    <button class="tab-btn" onclick="showPage('leaderboard-page', this)">
+      <span>🏆</span> Рейтинг
+    </button>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    // Переключение страниц
+    function showPage(pageId, btn) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    // Переключение режимов турнирной таблицы
+    function switchLeaderboard(mode) {
+      document.getElementById('btn-wins').classList.toggle('active', mode === 'wins');
+      document.getElementById('btn-games').classList.toggle('active', mode === 'games');
+      
+      const header = document.getElementById('stat-header');
+      const body = document.getElementById('leaderboard-body');
+
+      if (mode === 'wins') {
+        header.innerText = 'Победы';
+        body.innerHTML = `
+          <tr><td>1</td><td>👤 Vlad</td><td><b>5</b> (71%)</td></tr>
+          <tr><td>2</td><td>👤 Alex</td><td><b>3</b> (50%)</td></tr>
+        `;
+      } else {
+        header.innerText = 'Геймы (Разница)';
+        body.innerHTML = `
+          <tr><td>1</td><td>👤 Vlad</td><td><b>+18</b> (42/24)</td></tr>
+          <tr><td>2</td><td>👤 Alex</td><td><b>+6</b> (30/24)</td></tr>
+        `;
+      }
+    }
+
+    // Отправка данных бота
+    function sendData(payload) {
+      tg.sendData(JSON.stringify(payload));
+      tg.close();
+    }
+
+    function saveScore(matchId) {
+      const score = document.getElementById(`score-input-${matchId}`).value;
+      if (!score) return alert('Введите счет!');
+      sendData({ action: 'set_score', match_id: matchId, score: score });
+    }
+
+    function createMatch() {
+      const datetime = document.getElementById('match-datetime').value;
+      const location = document.getElementById('match-location').value;
+      const maxPlayers = document.getElementById('match-max').value;
+
+      if (!datetime || !location) return alert('Заполните дату и корт!');
+      
+      sendData({
+        action: 'create_match',
+        datetime: datetime,
+        location: location,
+        max_players: maxPlayers
+      });
+    }
+  </script>
+</body>
+</html>
